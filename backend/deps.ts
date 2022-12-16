@@ -1,5 +1,6 @@
 export { Client as DBClient } from 'https://deno.land/x/mysql@v2.10.3/mod.ts';
-export { decode, encode } from 'https://deno.land/std@0.157.0/encoding/hex.ts';
+export { decode, encode } from 'https://deno.land/std@0.168.0/encoding/hex.ts';
+export { dirname } from 'https://deno.land/std@0.168.0/path/mod.ts';
 export {
 	Application,
 	Context,
