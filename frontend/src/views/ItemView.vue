@@ -44,7 +44,7 @@
 			@click="editAmount(true)") Put in storage
 		form(
 			v-if="appState.hasPermissions([PERMISSIONS.MANAGE_ITEMS])"
-			:action="appState.backendURL + '/api/items/1/upload'"
+			:action="appState.backendURL + '/api/items/' + item.id + '/upload'"
 			method="post"
 			enctype="multipart/form-data")
 			input(type="file" name="document")
@@ -80,13 +80,15 @@ onMounted(() => {
 		.getByID(id)
 		.then((i) => {
 			item.value = i;
-			item.value.link.replace(/^file:\//, appState.backendURL);
 		})
 		.catch((err) => alert('Could not load the item', PopupColor.Red, err.message));
 });
 
 function openURL(url: string) {
-	window.location.href = url;
+	window.location.href = url.replace(
+		/^file:/,
+		`${appState.backendURL}/api/items/${item.value.id}/upload/`
+	);
 }
 
 function editItem() {

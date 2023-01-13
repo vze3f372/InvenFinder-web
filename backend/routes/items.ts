@@ -1,4 +1,4 @@
-import { dirname, Router } from '../deps.ts';
+import { basename, dirname, Router, send } from '../deps.ts';
 
 import auth from '../lib/auth.ts';
 import Item from '../lib/item.ts';
@@ -84,6 +84,7 @@ router.post('/', auth.permissions([PERMISSIONS.MANAGE_ITEMS]), async (ctx) => {
 	}
 });
 
+// Upload file for an item
 router.post('/:id/upload', async (ctx) => {
 	try {
 		const id = +ctx.params.id;
@@ -111,14 +112,18 @@ router.post('/:id/upload', async (ctx) => {
 			const dir = `./upload/${ctx.params.id}`;
 			const file = dir + `/${body.files[0].originalName}`;
 
-			await Deno.remove(dir, { recursive: true });
+			try {
+				await Deno.remove(dir, { recursive: true });
+			} catch {
+				// Nothing to do here
+			}
 			await Deno.mkdir(dir, { recursive: true });
 			await Deno.rename(body.files[0].filename, file);
 			await Deno.remove(dirname(body.files[0].filename), {
 				recursive: true,
 			});
 
-			item.link = file.replace(/^\./, `file:`);
+			item.link = 'file:' + basename(body.files[0].originalName);
 			item.save();
 		}
 	} catch (e) {
@@ -130,6 +135,11 @@ router.post('/:id/upload', async (ctx) => {
 				'Could not process your request, please check for errors and retry',
 		};
 	}
+});
+
+// Get file for an item
+router.get('/:id/upload/:file', async (ctx) => {
+	await send(ctx, `./upload/${ctx.params.id}/${ctx.params.file}`);
 });
 
 // Change item amount
@@ -230,6 +240,14 @@ router.patch(
 				item.description = body.description?.trim() ?? null;
 			}
 			if (body.link !== undefined) {
+				if (item.link?.match(/^file:/)) {
+					await Deno.remove(
+						dirname(item.link.replace(/^file:/, '.')),
+						{
+							recursive: true,
+						},
+					);
+				}
 				item.link = body.link?.trim() ?? null;
 			}
 			if (body.location?.length) {
