@@ -9,8 +9,9 @@ async function getSession(ctx: Context): Promise<Session | null> {
 		return ctx.state.session;
 	}
 
-	const id = (await ctx.cookies.get('SID')) ??
-		ctx.request.headers.get('api-key');
+	const id = ctx.request.headers.get('api-key') ??
+		(await ctx.cookies.get('SID')) ??
+		new URLSearchParams(ctx.request.url.search).get('SID');
 
 	if (id === null) {
 		return null;

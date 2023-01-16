@@ -55,7 +55,7 @@ function request<T>(path: string, params: RequestParams): Promise<T> {
 		const query =
 			params?.query &&
 			Object.keys(params?.query).reduce<Record<string, string>>((q, key) => {
-				params.query[key].trim() && (q[key] = params.query[key]);
+				params.query?.[key].trim() && (q[key] = params.query[key]);
 				return q;
 			}, {});
 		const queryString =
@@ -134,6 +134,7 @@ export const AuthAPI = {
 		}),
 	test: () => booleanify(request('/auth', {auth: true})),
 	me: () => request<User>('/me', {auth: true}),
+	getCookie: () => request<MessageResponse>('/getCookie', {auth: true}),
 	edit: (user: UpdateUser) =>
 		request<User>('/me', {auth: true, method: RequestMethod.PATCH, body: user}),
 	logout: () =>

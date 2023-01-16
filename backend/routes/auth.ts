@@ -91,6 +91,17 @@ router.get('/me', auth.authenticated(), async (ctx) => {
 	}
 });
 
+// Get temporary cookie for requests without header support
+router.get('/getCookie', auth.authenticated(), async (ctx) => {
+	await ctx.cookies.set('SID', ctx.request.headers.get('API-Key'), {
+		maxAge: 500,
+		httpOnly: true,
+		sameSite: 'none',
+	});
+	ctx.response.body = { message: 'Cookie set' };
+	ctx.response.status = 200;
+});
+
 // Edit user currently logged in as
 router.patch('/me', auth.authenticated(), async (ctx) => {
 	try {
